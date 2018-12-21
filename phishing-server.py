@@ -1,6 +1,6 @@
 from cmd import Cmd
 # import configparser
-import os, subprocess
+import os, subprocess, random, string
 import templates as template
 
 # PS1='\e[37;1m\u@\e[35m\W\e[0m\$ '
@@ -25,7 +25,6 @@ class Config(object):
         self.hostname = "us"
 
 
-
 class Begin(Cmd):
     '''starting out'''
 
@@ -45,7 +44,7 @@ class Begin(Cmd):
         # config.read('config.ini')
         config.hostname = raw_input("Enter hostname (mail): ")
         config.domain = raw_input("Enter domain (example.org): ")
-        config.fqdn = raw_input("Enter your fqdn eg: mail.example.org")
+        config.fqdn = raw_input("Enter your fqdn (eg mail.example.org): ")
         config.allowedIPs = raw_input("Enter comma separated IPs that can ssh to this host: ")
         # handle ranges also
         config.relayIP =  raw_input("Enter relay IP for mail if any: ")
@@ -85,7 +84,7 @@ class Begin(Cmd):
         # apt update/upgrade should be ran prior to script idk. Run this first to update and ensure basic tools are installed 
         # apt install basics, remove conflicting packages like sendmail, set hostname
         subprocess.call("apt-get update", shell=True)
-        subprocess.call("apt-get install -y dnsutils apache2 curl debconf-utils apt install opendkim-tools", shell=True)
+        subprocess.call("apt-get install -y dnsutils apache2 curl debconf-utils opendkim-tools", shell=True)
         subprocess.call("echo postfix postfix/mailname string {} | debconf-set-selections; echo postfix postfix/main_mailer_type string 'Internet Site' | debconf-set-selections ;export DEBIAN_FRONTEND=noninteractive; apt-get install -y procmail".format(fqdn), shell=True)
         subprocess.call("echo postfix postfix/mailname string {} | debconf-set-selections".format(fqdn), shell=True)
         subprocess.call("echo postfix postfix/main_mailer_type string 'Internet Site' | debconf-set-selections", shell=True)
@@ -123,7 +122,7 @@ class Begin(Cmd):
         pass
 
     def do_install_ssl(self, line):
-        print """External IP Address: {}\nDomain: {}\nFQDN: {}""".format(config.externalIP,config.domain,config.fqdn)
+        # print """External IP Address: {}\nDomain: {}\nFQDN: {}""".format(config.externalIP,config.domain,config.fqdn)
         ''' Installs letsencrypt for mail and web '''
         if not os.path.isdir('/etc/letsencrypt'):
             # install it
@@ -137,6 +136,7 @@ class Begin(Cmd):
         else:
             print "Let's Encrypt is already installed\n"
         # os.chdir('/opt/letsencrypt')
+        self.run_command('service apache2 stop')
         certbot = '/opt/letsencrypt/certbot-auto certonly -n --register-unsafely-without-email --agree-tos --standalone -d {}'
         subprocess.call(certbot.format(config.domain), shell=True)
         # subprocess.call(certbot.format(config.fqdn), shell=True)
@@ -147,33 +147,34 @@ class Begin(Cmd):
         ''' installs postfix and dovecot '''
         ### needs to read from template file and replace variables with ours
 
-        # run_command('adduser mailarchive --quiet --disabled-password --shell /usr/sbin/nologin --gecos ""')
-        # run_command('adduser mailcheck --quiet --disabled-password --shell /usr/sbin/nologin --gecos ""')
-        # mailArchivePassword = gen_password(32)
-        # mailCheckPassword = gen_password(32)
-        # run_command('echo "mailarchive:{}" | chpasswd'.format(mailArchivePassword))
-        # run_command('echo "mailcheck:{}" | chpasswd'.format(mailCheckPassword))
-        # print mailArchivePassword
-        # print mailCheckPassword
+        self.runcommand('adduser mailarchive --quiet --disabled-password --shell /usr/sbin/nologin --gecos ""')
+        self.runcommand('adduser mailcheck --quiet --disabled-password --shell /usr/sbin/nologin --gecos ""')
+        mailArchivePassword = self.gen_password(32)
+        mailCheckPassword = self.gen_password(32)
+        self.runcommand('echo "mailarchive:{}" | chpasswd'.format(mailArchivePassword))
+        self.runcommand('echo "mailcheck:{}" | chpasswd'.format(mailCheckPassword))
+        print mailArchivePassword
+        print mailCheckPassword
 
-        # print 'Installing Dovecot\n'
-        # run_command('apt-get install -y dovecot-common dovecot-imapd dovecot-lmtpd')
-        # print 'Installing Postfix\n'
-        # run_command('apt-get install -y postfix postgrey postfix-policyd-spf-python')
-        # print 'Installing OpenDMARC\n'
-        # run_command('apt-get install -y opendkim opendkim-tools')
-        # print 'opendmarc'
-        # run_command('apt-get install -y opendmarc')
-        # print 'mailutils'
-        # run_command('apt-get install -y mailutils')
+        print 'Installing Dovecot\n'
+        self.runcommand('apt-get install -y dovecot-common dovecot-imapd dovecot-lmtpd')
+        print 'Installing Postfix\n'
+        self.runcommand('apt-get install -y postfix postgrey postfix-policyd-spf-python')
+        print 'Installing OpenDMARC\n'
+        self.runcommand('apt-get install -y opendkim opendkim-tools')
+        print 'opendmarc'
+        self.runcommand('apt-get install -y opendmarc')
+        print 'mailutils'
+        self.runcommand('apt-get install -y mailutils')
 
         # POSTFIX
         self.write_file('/etc/postfix/main.cf',template.main_cf.format(config.domain,config.relayIP))
-        self.write_file('/etc/postfix/esmtp_access',template.esmtp_access)
-        self.write_file('/etc/postfix/master.cf',template.master.cf)
+        self.append_file('/etc/postfix/esmtp_access',template.esmtp_access)
+        self.append_file('/etc/postfix/master_cf',template.master_cf)
 
         # OPENDKIM
-        os.makedirs('/etc/opendkim/keys/{}'.format(self.domain))
+        if not os.path.exist('/etc/opendkim/keys/{}'.format(config.domain)):
+            os.makedirs('/etc/opendkim/keys/{}'.format(config.domain))
         self.write_file('/etc/opendkim.conf',template.opendkim_conf)
         self.write_file('/etc/opendkim/TrustedHosts',template.TrustedHosts.format(config.domain,config.relayIP))
         self.run_command('opendkim-genkey --bits=1024 --selector=mail --domain={0} --directory=/etc/opendkim/keys/{0}'.format(config.domain))
@@ -182,7 +183,8 @@ class Begin(Cmd):
 
         # DMARC
         self.write_file('/etc/opendmarc.conf',template.opendmarc_conf.format(config.domain))
-        self.run_command('mkdir /etc/opendmarc')
+        if not os.path.exist('/etc/opendmarc'):
+            self.run_command('mkdir /etc/opendmarc')
         self.run_command('echo "localhost" > /etc/opendmarc/ignore.hosts')
         self.run_command('chown -R opendmarc:opendmarc /etc/opendmarc')
         self.run_command('echo SOCKET="inet:54321" >> /etc/default/opendmarc')
@@ -248,7 +250,7 @@ class Begin(Cmd):
 
         dkim = txt.split('"')[1]+txt.split('"')[3]
         
-        print template.dns1.format(domain,serverExtIP,dkim)
+        print template.dns1.format(config.domain,serverExtIP,dkim)
 
     def do_change_domain(self, line):
         ''' Allows us to modify this server to work with a different domain '''
@@ -277,6 +279,10 @@ class Begin(Cmd):
 
     def write_file(self, file, lines):
         with open(file,'w+') as f:
+            f.write(lines)
+
+    def append_file(self, file, lines):
+        with open(file,'a+') as f:
             f.write(lines)
 
     def gen_password(self,length=32):

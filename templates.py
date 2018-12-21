@@ -102,38 +102,38 @@ verbose_ssl=yes
 disable_plaintext_auth = no
 mail_privileged_group = mail
 mail_location = mbox:~/mail:INBOX=/var/mail/%u
-userdb {
+userdb {{
   driver = passwd
-}
-passdb {
+}}
+passdb {{
   args = %s
   driver = pam
-}
+}}
 protocols = " imap"
-protocol imap {
+protocol imap {{
   mail_plugins = " autocreate"
-}
-plugin {
+}}
+plugin {{
   autocreate = Trash
   autocreate2 = Sent
   autosubscribe = Trash
   autosubscribe2 = Sent
-}
-service imap-login {
-  inet_listener imap {
+}}
+service imap-login {{
+  inet_listener imap {{
     port = 0
-  }
-  inet_listener imaps {
+  }}
+  inet_listener imaps {{
     port = 993
-  }
-}
-service auth {
-  unix_listener /var/spool/postfix/private/auth {
+  }}
+}}
+service auth {{
+  unix_listener /var/spool/postfix/private/auth {{
     group = postfix
     mode = 0660
     user = postfix
-  }
-}
+  }}
+}}
 ssl=required
 ssl_cert = </etc/letsencrypt/live/{0}/fullchain.pem
 ssl_key = </etc/letsencrypt/live/{0}/privkey.pem"""
