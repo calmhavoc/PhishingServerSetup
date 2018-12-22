@@ -153,7 +153,7 @@ class Begin(Cmd):
 
         pass
 
-    def do_3_install_mailserver(self, line):
+    def do_4_install_mailserver(self, line):
         ''' installs postfix and dovecot '''
         ### needs to read from template file and replace variables with ours
 
