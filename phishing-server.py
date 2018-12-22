@@ -23,7 +23,15 @@ def catch_exception(f):
 class Config(object):
     def __init__(self):
         self.hostname = "us"
-
+        self.domain = ""
+        self.fqdn = ""
+        self.externalIP = ""
+        self.allowedIPs = ""
+        self.relayIP = ""
+        self.rootMailUser = ""
+        self.mailcheck = ""
+        self.mailarchive = ""
+        self.weburl = ""
 
 class Begin(Cmd):
     '''starting out'''
@@ -35,6 +43,7 @@ class Begin(Cmd):
         print "Hello and Welcome! "
 
     def do_EOF(self,line):
+        print """FQDN: {}\nPasswords\n{}\n{}""".format(config.fqdn,config.mailcheck,config.mailarchive)
         return True
 
     def do_1_gather_requirements(self, line):
@@ -49,29 +58,30 @@ class Begin(Cmd):
         # handle ranges also
         config.relayIP =  raw_input("Enter relay IP for mail if any: ")
         config.rootMailName = "root" #raw_input("Who will recieve mail for root")
-        config.mailAdminName = "mailadmin"
-        config.mailArchiveName = "mailarchive"
+        config.mailcheck = ""
+        config.mailarchive = ""
 
-    def do_create_backups(self,line):
-        """ create backup of all files that we modify before touching them """
-        # /etc/opendkim.com
-        # /etc/opendkim/TrustedHosts
-        # /etc/default/opendkim
-        # 
-        pass
+
+    # def do_create_backups(self,line):
+    #     """ create backup of all files that we modify before touching them """
+    #     # /etc/opendkim.com
+    #     # /etc/opendkim/TrustedHosts
+    #     # /etc/default/opendkim
+    #     # 
+    #     pass
         
-    def do_read_config(self,line):
-        """ Reads a config file and updateds variables with the contents
-        hostname
-        domain
-        fqdn
-        allowSSHfrom
-        relayIPs
-        rootMailName
-        mailAdminName
-        mailArchiveName
+    # def do_read_config(self,line):
+    #     """ Reads a config file and updateds variables with the contents
+    #     hostname
+    #     domain
+    #     fqdn
+    #     allowSSHfrom
+    #     relayIPs
+    #     rootMailName
+    #     mailAdminName
+    #     mailArchiveName
 
-        """
+    #     """
 
     # @catch_exception
     def do_2_init(self,line):
@@ -102,26 +112,26 @@ class Begin(Cmd):
         with open('/etc/hostname','w+') as f:
             f.write('{}'.format(hostname))
 
-    def do_set_firewall(self,line):
-        ''' A bunch of preconfigured options for setting the firewall based on what we've configured'''
-        pass
-        # return True
+    # def do_set_firewall(self,line):
+    #     ''' A bunch of preconfigured options for setting the firewall based on what we've configured'''
+    #     pass
+    #     # return True
 
-    def do_baseline_system(self, line):
-        ''' Makes a backup of config files that we will be touching. looks at current packages for uninstalling others. services'''
-        # /etc/hosts
-        # /etc/hostname
-        # /etc/apache2/*
-        # /etc/dovecot/*
-        # /etc/logrotate.d/
-        # /etc/opendkim/*
-        # /etc/pam.d/imap
-        # /etc/postfix/*
-        # /var/www/html/.htaccess
-        # rm -rf /etc/letsencrypt/*
-        pass
+    # def do_baseline_system(self, line):
+    #     ''' Makes a backup of config files that we will be touching. looks at current packages for uninstalling others. services'''
+    #     # /etc/hosts
+    #     # /etc/hostname
+    #     # /etc/apache2/*
+    #     # /etc/dovecot/*
+    #     # /etc/logrotate.d/
+    #     # /etc/opendkim/*
+    #     # /etc/pam.d/imap
+    #     # /etc/postfix/*
+    #     # /var/www/html/.htaccess
+    #     # rm -rf /etc/letsencrypt/*
+    #     pass
 
-    def do_install_ssl(self, line):
+    def do_3_install_ssl(self, line):
         # print """External IP Address: {}\nDomain: {}\nFQDN: {}""".format(config.externalIP,config.domain,config.fqdn)
         ''' Installs letsencrypt for mail and web '''
         if not os.path.isdir('/etc/letsencrypt'):
@@ -143,7 +153,7 @@ class Begin(Cmd):
 
         pass
 
-    def do_install_mailserver(self, line):
+    def do_3_install_mailserver(self, line):
         ''' installs postfix and dovecot '''
         ### needs to read from template file and replace variables with ours
 
@@ -153,8 +163,8 @@ class Begin(Cmd):
         mailCheckPassword = self.gen_password(32)
         self.run_command('echo "mailarchive:{}" | chpasswd'.format(mailArchivePassword))
         self.run_command('echo "mailcheck:{}" | chpasswd'.format(mailCheckPassword))
-        print mailArchivePassword
-        print mailCheckPassword
+        config.mailarchive = "mailarchive:{}".format(mailArchivePassword)
+        config.mailcheck = "mailcheck:{}".format(mailCheckPassword)
 
         print 'Installing Dovecot\n'
         self.run_command('apt-get install -y dovecot-common dovecot-imapd dovecot-lmtpd')
@@ -200,21 +210,21 @@ class Begin(Cmd):
         self.run_command('service postfix restart')
         self.run_command('service dovecot restart')
 
-    def do_install_webserver(self,line):
-        ''' Not yet implemented '''
+    # def do_install_webserver(self,line):
+    #     ''' Not yet implemented '''
 
-        # self.run_command('mkdir /var/www/html/placeholder')
-        # self.run_command('mkdir /var/www/html/archive')
-        # Apache
-        commands = ["a2enmod rewrite","service apache2 stop", "a2enmod ssl", "a2enmod headers", "a2enmod https"]
-        path = '/etc/apache2/sites-enabled'
-        commands2 = ["a2dissite {0}/000-default","a2dissite {0}default-ssl", "a2dissite {0}000-default.conf", "a2dissite {0}default-ssl.conf"]
+    #     # self.run_command('mkdir /var/www/html/placeholder')
+    #     # self.run_command('mkdir /var/www/html/archive')
+    #     # Apache
+    #     commands = ["a2enmod rewrite","service apache2 stop", "a2enmod ssl", "a2enmod headers", "a2enmod https"]
+    #     path = '/etc/apache2/sites-enabled'
+    #     commands2 = ["a2dissite {0}/000-default","a2dissite {0}default-ssl", "a2dissite {0}000-default.conf", "a2dissite {0}default-ssl.conf"]
 
-        for command in commands: 
-            self.run_command(command)
+    #     for command in commands: 
+    #         self.run_command(command)
 
-        for command in commands2:
-            self.run_command(command.format(path))
+    #     for command in commands2:
+    #         self.run_command(command.format(path))
 
             
         # self.write_file('/etc/postfix/main.cf',template.main_cf.format(config.domain,config.relayIP))
@@ -228,19 +238,19 @@ class Begin(Cmd):
 
 
 
-    def do_remove_all_packages(self,line):
-        a = raw_input("This will remove all packages that this script has added but could have unintended consequences. Continue? ")
-        if a.lower() == "y":
-            run_command("apt-get purge apache2 python-certbot-apache procmail dovecot-common dovecot-imapd dovecot-lmtpd postfix postgrey postfix-policyd-spf-python opendkim opendkim-tools opendmarc mailutils")
-            run_command("apt-get autoremove apache2 python-certbot-apache procmail dovecot-common dovecot-imapd dovecot-lmtpd postfix postgrey postfix-policyd-spf-python opendkim opendkim-tools opendmarc mailutils")
+    # def do_remove_all_packages(self,line):
+    #     a = raw_input("This will remove all packages that this script has added but could have unintended consequences. Continue? ")
+    #     if a.lower() == "y":
+    #         run_command("apt-get purge apache2 python-certbot-apache procmail dovecot-common dovecot-imapd dovecot-lmtpd postfix postgrey postfix-policyd-spf-python opendkim opendkim-tools opendmarc mailutils")
+    #         run_command("apt-get autoremove apache2 python-certbot-apache procmail dovecot-common dovecot-imapd dovecot-lmtpd postfix postgrey postfix-policyd-spf-python opendkim opendkim-tools opendmarc mailutils")
 
-    def do_set_https_web(self, line):
-        ''' sets up webserver for ssl only'''
-        pass
+    # def do_set_https_web(self, line):
+    #     ''' sets up webserver for ssl only'''
+    #     pass
 
-    def do_httpsc2doneright(self, line):
-        ''' configures https done right for cobaltstrike '''
-        pass
+    # def do_httpsc2doneright(self, line):
+    #     ''' configures https done right for cobaltstrike '''
+    #     pass
 
 
     def do_print_DNS(self, line):
@@ -254,27 +264,27 @@ class Begin(Cmd):
         
         print template.dns1.format(config.domain,serverExtIP,dkim)
 
-    def do_change_domain(self, line):
-        ''' Allows us to modify this server to work with a different domain '''
-        pass
+    # def do_change_domain(self, line):
+    #     ''' Allows us to modify this server to work with a different domain '''
+    #     pass
 
-    def do_install_webmail(self, line):
-        ''' sets up an instance for us to use the mail server, check mail, interact,respond,etc '''
-        pass
+    # def do_install_webmail(self, line):
+    #     ''' sets up an instance for us to use the mail server, check mail, interact,respond,etc '''
+    #     pass
 
-    def disable_ipv6(self,line):
-        # cat <<-EOF >> /etc/sysctl.conf
-        # net.ipv6.conf.all.disable_ipv6 = 1
-        # net.ipv6.conf.default.disable_ipv6 = 1
-        # net.ipv6.conf.lo.disable_ipv6 = 1
-        # net.ipv6.conf.eth0.disable_ipv6 = 1
-        # net.ipv6.conf.eth1.disable_ipv6 = 1
-        # net.ipv6.conf.ppp0.disable_ipv6 = 1
-        # net.ipv6.conf.tun0.disable_ipv6 = 1
-        # EOF
-        # sysctl -p > /dev/null 2>&1
+    # def disable_ipv6(self,line):
+    #     # cat <<-EOF >> /etc/sysctl.conf
+    #     # net.ipv6.conf.all.disable_ipv6 = 1
+    #     # net.ipv6.conf.default.disable_ipv6 = 1
+    #     # net.ipv6.conf.lo.disable_ipv6 = 1
+    #     # net.ipv6.conf.eth0.disable_ipv6 = 1
+    #     # net.ipv6.conf.eth1.disable_ipv6 = 1
+    #     # net.ipv6.conf.ppp0.disable_ipv6 = 1
+    #     # net.ipv6.conf.tun0.disable_ipv6 = 1
+    #     # EOF
+    #     # sysctl -p > /dev/null 2>&1
 
-        pass
+    #     pass
 
     def run_command(self,command):
         subprocess.call(command, shell=True)
