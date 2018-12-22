@@ -147,33 +147,33 @@ class Begin(Cmd):
         ''' installs postfix and dovecot '''
         ### needs to read from template file and replace variables with ours
 
-        self.runcommand('adduser mailarchive --quiet --disabled-password --shell /usr/sbin/nologin --gecos ""')
-        self.runcommand('adduser mailcheck --quiet --disabled-password --shell /usr/sbin/nologin --gecos ""')
+        self.run_command('adduser mailarchive --quiet --disabled-password --shell /usr/sbin/nologin --gecos ""')
+        self.run_command('adduser mailcheck --quiet --disabled-password --shell /usr/sbin/nologin --gecos ""')
         mailArchivePassword = self.gen_password(32)
         mailCheckPassword = self.gen_password(32)
-        self.runcommand('echo "mailarchive:{}" | chpasswd'.format(mailArchivePassword))
-        self.runcommand('echo "mailcheck:{}" | chpasswd'.format(mailCheckPassword))
+        self.run_command('echo "mailarchive:{}" | chpasswd'.format(mailArchivePassword))
+        self.run_command('echo "mailcheck:{}" | chpasswd'.format(mailCheckPassword))
         print mailArchivePassword
         print mailCheckPassword
 
         print 'Installing Dovecot\n'
-        self.runcommand('apt-get install -y dovecot-common dovecot-imapd dovecot-lmtpd')
+        self.run_command('apt-get install -y dovecot-common dovecot-imapd dovecot-lmtpd')
         print 'Installing Postfix\n'
-        self.runcommand('apt-get install -y postfix postgrey postfix-policyd-spf-python')
+        self.run_command('apt-get install -y postfix postgrey postfix-policyd-spf-python')
         print 'Installing OpenDMARC\n'
-        self.runcommand('apt-get install -y opendkim opendkim-tools')
+        self.run_command('apt-get install -y opendkim opendkim-tools')
         print 'opendmarc'
-        self.runcommand('apt-get install -y opendmarc')
+        self.run_command('apt-get install -y opendmarc')
         print 'mailutils'
-        self.runcommand('apt-get install -y mailutils')
+        self.run_command('apt-get install -y mailutils')
 
         # POSTFIX
         self.write_file('/etc/postfix/main.cf',template.main_cf.format(config.domain,config.relayIP))
         self.append_file('/etc/postfix/esmtp_access',template.esmtp_access)
-        self.append_file('/etc/postfix/master_cf',template.master_cf)
+        self.append_file('/etc/postfix/master.cf',template.master_cf)
 
         # OPENDKIM
-        if not os.path.exist('/etc/opendkim/keys/{}'.format(config.domain)):
+        if not os.path.exists('/etc/opendkim/keys/{}'.format(config.domain)):
             os.makedirs('/etc/opendkim/keys/{}'.format(config.domain))
         self.write_file('/etc/opendkim.conf',template.opendkim_conf)
         self.write_file('/etc/opendkim/TrustedHosts',template.TrustedHosts.format(config.domain,config.relayIP))
@@ -183,7 +183,7 @@ class Begin(Cmd):
 
         # DMARC
         self.write_file('/etc/opendmarc.conf',template.opendmarc_conf.format(config.domain))
-        if not os.path.exist('/etc/opendmarc'):
+        if not os.path.exists('/etc/opendmarc'):
             self.run_command('mkdir /etc/opendmarc')
         self.run_command('echo "localhost" > /etc/opendmarc/ignore.hosts')
         self.run_command('chown -R opendmarc:opendmarc /etc/opendmarc')
@@ -195,8 +195,10 @@ class Begin(Cmd):
 
         # PAM/IMAP
         self.write_file('/etc/pam.d/imap',template.pamd_imap)
+        
 
-
+        self.run_command('service postfix restart')
+        self.run_command('service dovecot restart')
 
     def do_install_webserver(self,line):
         ''' Not yet implemented '''
@@ -212,7 +214,7 @@ class Begin(Cmd):
             self.run_command(command)
 
         for command in commands2:
-            self.runcommand(command.format(path))
+            self.run_command(command.format(path))
 
             
         # self.write_file('/etc/postfix/main.cf',template.main_cf.format(config.domain,config.relayIP))
