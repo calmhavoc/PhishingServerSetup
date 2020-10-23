@@ -15,8 +15,8 @@ def catch_exception(f):
         try:
             return f(*args, **kwargs)
         except Exception as e:
-            print 'Caught an exception in', f.__name__
-            print str(e)
+            print('Caught an exception in', f.__name__)
+            print(str(e))
     return func
 
 
@@ -40,10 +40,10 @@ class Begin(Cmd):
     config = Config()
 
     def do_greet(self,line):
-        print "Hello and Welcome! "
+        print("Hello and Welcome! ")
 
     def do_EOF(self,line):
-        print """FQDN: {}\nPasswords\n{}\n{}""".format(config.fqdn,config.mailcheck,config.mailarchive)
+        print("""FQDN: {}\nPasswords\n{}\n{}""").format(config.fqdn,config.mailcheck,config.mailarchive)
         return True
 
     def do_1_gather_requirements(self, line):
@@ -132,7 +132,7 @@ class Begin(Cmd):
     #     pass
 
     def do_3_install_ssl(self, line):
-        # print """External IP Address: {}\nDomain: {}\nFQDN: {}""".format(config.externalIP,config.domain,config.fqdn)
+        # print("""External IP Address: {}\nDomain: {}\nFQDN: {}""").format(config.externalIP,config.domain,config.fqdn)
         ''' Installs letsencrypt for mail and web '''
         if not os.path.isdir('/etc/letsencrypt'):
             # install it
@@ -144,16 +144,19 @@ class Begin(Cmd):
             self.run_command('apt-get install -y python-certbot-apache')
             self.run_command('git clone https://github.com/certbot/certbot.git /opt/letsencrypt')
         else:
-            print "Let's Encrypt is already installed\n"
+            print("Let's Encrypt is already installed\n")
         # os.chdir('/opt/letsencrypt')
+        
         self.run_command('service apache2 stop')
         certbot = '/opt/letsencrypt/certbot-auto certonly -n --register-unsafely-without-email --agree-tos --standalone -d {}'
         subprocess.call(certbot.format(config.domain), shell=True)
         # subprocess.call(certbot.format(config.fqdn), shell=True)
 
-        pass
+        #pass
 
-    def do_4_install_mailserver(self, line):
+
+
+	def do_4_install_mailserver(self, line):
         ''' installs postfix and dovecot '''
         ### needs to read from template file and replace variables with ours
 
@@ -166,15 +169,15 @@ class Begin(Cmd):
         config.mailarchive = "mailarchive:{}".format(mailArchivePassword)
         config.mailcheck = "mailcheck:{}".format(mailCheckPassword)
 
-        print 'Installing Dovecot\n'
+        print('Installing Dovecot\n')
         self.run_command('apt-get install -y dovecot-common dovecot-imapd dovecot-lmtpd')
-        print 'Installing Postfix\n'
+        print('Installing Postfix\n')
         self.run_command('apt-get install -y postfix postgrey postfix-policyd-spf-python')
-        print 'Installing OpenDMARC\n'
+        print('Installing OpenDMARC\n')
         self.run_command('apt-get install -y opendkim opendkim-tools')
-        print 'opendmarc'
+        print('opendmarc')
         self.run_command('apt-get install -y opendmarc')
-        print 'mailutils'
+        print('mailutils')
         self.run_command('apt-get install -y mailutils')
 
         # POSTFIX
@@ -262,7 +265,7 @@ class Begin(Cmd):
 
         dkim = txt.split('"')[1]+txt.split('"')[3]
         
-        print template.dns1.format(config.domain,serverExtIP,dkim)
+        print(template.dns1.format(config.domain,serverExtIP,dkim))
 
     # def do_change_domain(self, line):
     #     ''' Allows us to modify this server to work with a different domain '''
