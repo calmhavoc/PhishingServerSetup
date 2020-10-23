@@ -136,13 +136,12 @@ class Begin(Cmd):
         ''' Installs letsencrypt for mail and web '''
         if not os.path.isdir('/etc/letsencrypt'):
             # install it
-            self.run_command('service apache2 stop')
-            self.run_command('apt-get install software-properties-common python-software-properties -y')
-            self.run_command('add-apt-repository ppa:certbot/certbot -y')
             self.run_command('apt-get update')
-            self.run_command('apt-get install python-certbot-apache -y')
-            self.run_command('apt-get install -y python-certbot-apache')
-            self.run_command('git clone https://github.com/certbot/certbot.git /opt/letsencrypt')
+            self.run_command('service apache2 stop')
+            self.run_command('apt-get install software-properties-common -y')
+            # self.run_command('add-apt-repository ppa:certbot/certbot -y')
+            self.run_command('apt-get install certbot python3-certbot-apache -y')
+            # self.run_command('git clone https://github.com/certbot/certbot.git /opt/letsencrypt')
         else:
             print("Let's Encrypt is already installed\n")
         # os.chdir('/opt/letsencrypt')
