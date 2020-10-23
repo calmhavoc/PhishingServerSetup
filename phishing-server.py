@@ -51,13 +51,13 @@ class Begin(Cmd):
         Maybe other things'''
         # config = configparser.ConfigParser()
         # config.read('config.ini')
-        config.hostname = raw_input("Enter hostname (mail): ")
-        config.domain = raw_input("Enter domain (example.org): ")
-        config.fqdn = raw_input("Enter your fqdn (eg mail.example.org): ")
-        config.allowedIPs = raw_input("Enter comma separated IPs that can ssh to this host: ")
+        config.hostname = input("Enter hostname (mail): ")
+        config.domain = input("Enter domain (example.org): ")
+        config.fqdn = input("Enter your fqdn (eg mail.example.org): ")
+        config.allowedIPs = input("Enter comma separated IPs that can ssh to this host: ")
         # handle ranges also
-        config.relayIP =  raw_input("Enter relay IP for mail if any: ")
-        config.rootMailName = "root" #raw_input("Who will recieve mail for root")
+        config.relayIP =  input("Enter relay IP for mail if any: ")
+        config.rootMailName = "root" #input("Who will recieve mail for root")
         config.mailcheck = ""
         config.mailarchive = ""
 
@@ -156,7 +156,7 @@ class Begin(Cmd):
 
 
 
-	def do_4_install_mailserver(self, line):
+    def do_4_install_mailserver(self, line):
         ''' installs postfix and dovecot '''
         ### needs to read from template file and replace variables with ours
 
@@ -242,7 +242,7 @@ class Begin(Cmd):
 
 
     # def do_remove_all_packages(self,line):
-    #     a = raw_input("This will remove all packages that this script has added but could have unintended consequences. Continue? ")
+    #     a = input("This will remove all packages that this script has added but could have unintended consequences. Continue? ")
     #     if a.lower() == "y":
     #         run_command("apt-get purge apache2 python-certbot-apache procmail dovecot-common dovecot-imapd dovecot-lmtpd postfix postgrey postfix-policyd-spf-python opendkim opendkim-tools opendmarc mailutils")
     #         run_command("apt-get autoremove apache2 python-certbot-apache procmail dovecot-common dovecot-imapd dovecot-lmtpd postfix postgrey postfix-policyd-spf-python opendkim opendkim-tools opendmarc mailutils")
