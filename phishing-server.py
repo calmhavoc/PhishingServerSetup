@@ -87,7 +87,7 @@ class Begin(Cmd):
     def do_2_init(self,line):
         global config
         if os.geteuid() != 0:
-            return("Must be root")
+            print("Must be root")
         fqdn = config.fqdn
         hostname = config.hostname
         domain = config.domain
