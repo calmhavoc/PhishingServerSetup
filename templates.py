@@ -135,8 +135,8 @@ service auth {{
   }}
 }}
 ssl=required
-ssl_cert = </etc/letsencrypt/live/{0}/fullchain.pem
-ssl_key = </etc/letsencrypt/live/{0}/privkey.pem"""
+ssl_cert = /etc/letsencrypt/live/{0}/fullchain.pem
+ssl_key = /etc/letsencrypt/live/{0}/privkey.pem"""
 
 
 
