@@ -44,7 +44,7 @@ class Begin(Cmd):
         print("Hello and Welcome! ")
 
     def do_EOF(self,line):
-        print("""FQDN: {}\nPasswords\n{}\n{}""").format(config.fqdn,config.mailcheck,config.mailarchive)
+        print("""FQDN: {}\nPasswords\n{}\n{}""".format(config.fqdn,config.mailcheck,config.mailarchive))
         return True
 
     def do_1_gather_requirements(self, line):
