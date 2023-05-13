@@ -41,6 +41,15 @@ class Begin(Cmd):
     config = Config()
 
     def do_greet(self,line):
+        welcome_msg = ''' 
+        Run 1 to set host variables
+        Run 2 to install necessary packages and set some more vars
+        Run 3 if SSL is necessary for HTTPS, otherwise skip
+        Run 4 to install necessary mail server packages and write config files
+        When all is set, run Print_DNS to show DNS record info that will need to be configured
+        _EOF to exit and print the data.
+        creds.txt and dns_records.txt will be stored in the local dir
+        '''
         print("Hello and Welcome! ")
 
     def do_EOF(self,line):
