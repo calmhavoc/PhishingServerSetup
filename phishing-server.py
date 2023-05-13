@@ -270,7 +270,7 @@ class Begin(Cmd):
         write_file('./dns_records.txt', dns_records)
         write_file('./creds.txt', passwords)
         
-        print dns_records
+        print(dns_records)
         print('\n\n')
         print(passwords)
         
