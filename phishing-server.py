@@ -50,7 +50,7 @@ class Begin(Cmd):
         _EOF to exit and print the data.
         creds.txt and dns_records.txt will be stored in the local dir
         '''
-        print("Hello and Welcome! ")
+        print(welcome_msg)
 
     def do_EOF(self,line):
         print("""FQDN: {}\nPasswords\n{}\n{}""".format(config.fqdn,config.mailcheck,config.mailarchive))
