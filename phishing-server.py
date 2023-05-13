@@ -88,6 +88,7 @@ class Begin(Cmd):
         global config
         if os.geteuid() != 0:
             print("Must be root")
+            return True
         fqdn = config.fqdn
         hostname = config.hostname
         domain = config.domain
@@ -304,6 +305,9 @@ class Begin(Cmd):
     def gen_password(self,length=32):
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
+    
+    def do_exit(self,*args):
+        return True
 
 
 if __name__ == '__main__':
