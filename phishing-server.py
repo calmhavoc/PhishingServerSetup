@@ -1,6 +1,7 @@
 from cmd import Cmd
 # import configparser
 import os, subprocess, random, string
+from urllib.request import urlopen
 import templates as template
 
 # PS1='\e[37;1m\u@\e[35m\W\e[0m\$ '
@@ -97,7 +98,7 @@ class Begin(Cmd):
         # apt update/upgrade should be ran prior to script idk. Run this first to update and ensure basic tools are installed 
         # apt install basics, remove conflicting packages like sendmail, set hostname
         subprocess.call("apt-get update", shell=True)
-        subprocess.call("apt-get install -y dnsutils apache2 curl debconf-utils opendkim-tools", shell=True)
+        subprocess.call("apt-get install -y dnsutils curl debconf-utils", shell=True)
         subprocess.call("echo postfix postfix/mailname string {} | debconf-set-selections; echo postfix postfix/main_mailer_type string 'Internet Site' | debconf-set-selections ;export DEBIAN_FRONTEND=noninteractive; apt-get install -y procmail".format(fqdn), shell=True)
         subprocess.call("echo postfix postfix/mailname string {} | debconf-set-selections".format(fqdn), shell=True)
         subprocess.call("echo postfix postfix/main_mailer_type string 'Internet Site' | debconf-set-selections", shell=True)
@@ -174,11 +175,9 @@ class Begin(Cmd):
         self.run_command('apt-get install -y dovecot-common dovecot-imapd dovecot-lmtpd')
         print('Installing Postfix\n')
         self.run_command('apt-get install -y postfix postgrey postfix-policyd-spf-python')
-        print('Installing OpenDMARC\n')
-        self.run_command('apt-get install -y opendkim opendkim-tools')
-        print('opendmarc')
-        self.run_command('apt-get install -y opendmarc')
-        print('mailutils')
+        print('Installing OpenDKIM and OpenDMARC\n')
+        self.run_command('apt-get install -y opendkim opendkim-tools opendmarc')
+        print('Installing mailutils')
         self.run_command('apt-get install -y mailutils')
 
         # POSTFIX
@@ -259,8 +258,7 @@ class Begin(Cmd):
 
     def do_print_DNS(self, line):
         ''' Prints the DNS records that should be present for the domain '''
-        import urllib2
-        serverExtIP = urllib2.urlopen("http://icanhazip.com").read()
+        serverExtIP = urlopen("http://ifconfig.me").read()
         with open('/etc/opendkim/keys/{0}/mail.txt'.format(config.domain)) as f:
             txt = f.read()
 
