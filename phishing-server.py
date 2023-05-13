@@ -142,15 +142,14 @@ class Begin(Cmd):
             self.run_command('apt-get update')
             self.run_command('service apache2 stop')
             self.run_command('apt-get install software-properties-common -y')
-            # self.run_command('add-apt-repository ppa:certbot/certbot -y')
-            self.run_command('apt-get install certbot python3-certbot-apache -y')
-            # self.run_command('git clone https://github.com/certbot/certbot.git /opt/letsencrypt')
+            self.run_command('apt-get install certbot -y')
+
         else:
             print("Let's Encrypt is already installed\n")
         # os.chdir('/opt/letsencrypt')
         
         self.run_command('service apache2 stop')
-        certbot = '/opt/letsencrypt/certbot-auto certonly -n --register-unsafely-without-email --agree-tos --standalone -d {}'
+        certbot = 'certbot certonly --standalone --register-unsafely-without-email --agree-tos -d {}'
         subprocess.call(certbot.format(config.domain), shell=True)
         # subprocess.call(certbot.format(config.fqdn), shell=True)
 
