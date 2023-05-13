@@ -258,7 +258,7 @@ class Begin(Cmd):
 
     def do_print_DNS(self, line):
         ''' Prints the DNS records that should be present for the domain '''
-        serverExtIP = urlopen("http://ifconfig.me").read()
+        serverExtIP = urlopen("http://ifconfig.me").read().decode()
         with open('/etc/opendkim/keys/{0}/mail.txt'.format(config.domain)) as f:
             txt = f.read()
 
