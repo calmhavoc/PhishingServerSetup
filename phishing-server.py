@@ -267,8 +267,8 @@ class Begin(Cmd):
         dns_records = template.dns1.format(config.domain,serverExtIP,dkim)
         passwords = """FQDN: {}\nPasswords\n{}\n{}""".format(config.fqdn,config.mailcheck,config.mailarchive)
         
-        write_file('./dns_records.txt', dns_records)
-        write_file('./creds.txt', passwords)
+        self.write_file('./dns_records.txt', dns_records)
+        self.write_file('./creds.txt', passwords)
         
         print(dns_records)
         print('\n\n')
