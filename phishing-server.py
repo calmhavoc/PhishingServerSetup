@@ -98,7 +98,7 @@ class Begin(Cmd):
         # apt update/upgrade should be ran prior to script idk. Run this first to update and ensure basic tools are installed 
         # apt install basics, remove conflicting packages like sendmail, set hostname
         subprocess.call("apt-get update", shell=True)
-        subprocess.call("apt-get install -y dnsutils curl debconf-utils", shell=True)
+        subprocess.call("sudo NEEDRESTART_MODE=a apt-get install -y dnsutils curl debconf-utils", shell=True)
         subprocess.call("echo postfix postfix/mailname string {} | debconf-set-selections; echo postfix postfix/main_mailer_type string 'Internet Site' | debconf-set-selections ;export DEBIAN_FRONTEND=noninteractive; apt-get install -y procmail".format(fqdn), shell=True)
         subprocess.call("echo postfix postfix/mailname string {} | debconf-set-selections".format(fqdn), shell=True)
         subprocess.call("echo postfix postfix/main_mailer_type string 'Internet Site' | debconf-set-selections", shell=True)
@@ -142,7 +142,7 @@ class Begin(Cmd):
             # install it
             self.run_command('apt-get update')
             self.run_command('service apache2 stop')
-            self.run_command('apt-get install software-properties-common -y')
+            self.run_command('sudo NEEDRESTART_MODE=a apt-get install software-properties-common -y')
             self.run_command('apt-get install certbot -y')
 
         else:
@@ -172,13 +172,13 @@ class Begin(Cmd):
         config.mailcheck = "mailcheck:{}".format(mailCheckPassword)
 
         print('Installing Dovecot\n')
-        self.run_command('apt-get install -y dovecot-common dovecot-imapd dovecot-lmtpd')
+        self.run_command('sudo NEEDRESTART_MODE=a apt-get install -y dovecot-common dovecot-imapd dovecot-lmtpd')
         print('Installing Postfix\n')
-        self.run_command('apt-get install -y postfix postgrey postfix-policyd-spf-python')
+        self.run_command('sudo NEEDRESTART_MODE=a apt-get install -y postfix postgrey postfix-policyd-spf-python')
         print('Installing OpenDKIM and OpenDMARC\n')
-        self.run_command('apt-get install -y opendkim opendkim-tools opendmarc')
+        self.run_command('sudo NEEDRESTART_MODE=a apt-get install -y opendkim opendkim-tools opendmarc')
         print('Installing mailutils')
-        self.run_command('apt-get install -y mailutils')
+        self.run_command('sudo NEEDRESTART_MODE=a apt-get install -y mailutils')
 
         # POSTFIX
         self.write_file('/etc/postfix/main.cf',template.main_cf.format(config.domain,config.relayIP))
