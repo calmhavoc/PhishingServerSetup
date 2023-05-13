@@ -88,7 +88,7 @@ class Begin(Cmd):
         global config
         if os.geteuid() != 0:
             print("Must be root")
-            return True
+            do_greet
         fqdn = config.fqdn
         hostname = config.hostname
         domain = config.domain
