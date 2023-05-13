@@ -83,7 +83,7 @@ class Begin(Cmd):
 
     #     """
 
-    # @catch_exception
+    @catch_exception
     def do_2_init(self,line):
         global config
         if os.geteuid() != 0:
