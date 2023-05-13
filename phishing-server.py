@@ -86,6 +86,8 @@ class Begin(Cmd):
     # @catch_exception
     def do_2_init(self,line):
         global config
+        if os.geteuid() != 0:
+            return("Must be root")
         fqdn = config.fqdn
         hostname = config.hostname
         domain = config.domain
